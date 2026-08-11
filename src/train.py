@@ -16,10 +16,15 @@ def run_training_and_production():
     # ===================================================================
     # 1. SETUP Y LECTURA DE HIPERPARÁMETROS
     # ===================================================================
-    ruta_params = '../models/best_params.json'
+    # 1. Obtiene la carpeta exacta donde está guardado este archivo .py
+    directorio_script = os.path.dirname(os.path.abspath(__file__))
+
+    # 2. Construye la ruta absoluta hacia el archivo JSON (sube un nivel y entra a 'models')
+    ruta_params = os.path.abspath(os.path.join(directorio_script, '..', 'models', 'best_params.json'))
+
+    # 3. Verifica si el archivo existe en esa ruta absoluta fija
     if not os.path.exists(ruta_params):
-        raise FileNotFoundError("No se encontró best_params.json. Ejecuta 'python src/optimize.py' primero.")
-        
+        raise FileNotFoundError(f"No se encontró best_params.json en {ruta_params}. Ejecuta 'python src/optimize.py' primero.")
     with open(ruta_params, 'r') as f:
         mejores_parametros = json.load(f)
 
@@ -55,11 +60,10 @@ def run_training_and_production():
     X_val_procesado = preprocesador_val.transform(X_val)
     
     print("⏳ Entrenando contra el Muro de Hierro (con Early Stopping)...")
-    xgb_validacion = XGBRegressor(**params_validacion)
+    xgb_validacion = XGBRegressor(**params_validacion, early_stopping_rounds=50)
     xgb_validacion.fit(
         X_train_procesado, y_train,
         eval_set=[(X_val_procesado, y_val)],
-        early_stopping_rounds=50,
         verbose=False
     )
     

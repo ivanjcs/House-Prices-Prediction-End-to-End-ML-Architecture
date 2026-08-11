@@ -18,19 +18,15 @@ class SafeLog1pTransformer(BaseEstimator, TransformerMixin):
         self.cols_to_transform_ = []
 
     def fit(self, X, y=None):
+        self.cols_to_transform_ = [] # Reinicia la memoria en cada fit
         numericas = X.select_dtypes(include=[np.number]).columns
         for col in numericas:
-            # Obtener el valor mínimo de la columna en entrenamiento para prevenir NaNs
             valor_minimo = X[col].min()
-            
-            # Comprobar si la variable es estrictamente binaria (solo contiene 0 y 1 o NaNs)
             es_binaria = X[col].isin([0, 1, np.nan]).all()
-            
-            # Regla de negocio: Solo transformar variables no binarias y sin valores negativos
             if valor_minimo >= 0 and not es_binaria:
                 self.cols_to_transform_.append(col)
         return self
-
+    
     def transform(self, X):
         # Aplicar la transformación np.log1p sobre copias para mantener la inmutabilidad
         X_out = X.copy()
@@ -172,7 +168,7 @@ class FScoreFeatureSelector(BaseEstimator, TransformerMixin):
             if int(f_scores.get(col, 0)) > self.threshold
         ]
         
-        print(f"✂️ Feature Selection: De {X.shape[1]} variables, se conservan {len(self.features_to_keep_)}.")
+        #print(f"✂️ Feature Selection: De {X.shape[1]} variables, se conservan {len(self.features_to_keep_)}.")
         return self
 
     def transform(self, X):
@@ -251,21 +247,19 @@ def build_preprocessor() -> Pipeline:
     # 3. Enrutador Base
     preprocesador_base = ColumnTransformer(
         transformers=[
-            ('logaritmo_seguro', SafeLog1pTransformer()),
             ('simple_nominal', OneHotEncoder(sparse_output=False, handle_unknown='ignore'), direct_ohe_cols),
             ('complex_nominal', complex_nominal_pipeline, complex_nominal_cols),
             ('neighborhood_kmeans', TargetKMeansClusterer(n_clusters=3), neighborhood_col)
-            ('seleccion_fscore', FScoreFeatureSelector(threshold=2))
         ],
         remainder='passthrough' 
     )
     
-    # 4. Pipeline Maestro (Aquí integramos la capa logarítmica que faltaba al inicio)
-    pipeline_maestro = Pipeline(steps=[
-        ('logaritmo_seguro', SafeLog1pTransformer()),
-        ('preprocesador_base', preprocesador_base),
-        ('feature_engineering_dinamico', UniversalFeatureEngineer(feature_functions=MIS_NUEVAS_REGLAS))
-    ])
+    # 2. La secuencia estricta: Primero transformar, LUEGO podar
+    #pipeline_maestro = Pipeline(steps=[
+    #    ('logaritmo_seguro', SafeLog1pTransformer()),
+    #    ('transformacion_base', preprocesador_base),
+    #    ('seleccion_fscore', FScoreFeatureSelector(threshold=2)) # Actúa sobre el 100% de la matriz ya transformada
+    #])
     
     preprocesador_base.set_output(transform="pandas")
     

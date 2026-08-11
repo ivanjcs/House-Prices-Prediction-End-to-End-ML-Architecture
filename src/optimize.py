@@ -42,11 +42,12 @@ def objective(trial, X, y):
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
     fold_scores = []
     
-    # 1. Obtenemos una instancia inmaculada de nuestro pipeline
-    preprocesador = build_preprocessor()
     
     # 2. EL BUCLE STRICTO (Cero Data Leakage)
     for train_idx, val_idx in kf.split(X):
+        
+        preprocesador = build_preprocessor()
+        
         X_tr, X_va = X.iloc[train_idx], X.iloc[val_idx]
         y_tr, y_va = y.iloc[train_idx], y.iloc[val_idx]
         
@@ -109,10 +110,19 @@ def run_optimization():
     print(f"=======================================================")
     print(f"Mejor CV Score (RMSLE): {mejor_intento.value:.4f}")
     
-    # Guardar los mejores parámetros en un JSON
-    os.makedirs('../models', exist_ok=True)
-    with open('../models/best_params.json', 'w') as f:
-        json.append(mejor_intento.params, f, indent=4)
+    directorio_script = os.path.dirname(os.path.abspath(__file__))
+    
+    # 2. Construye la ruta absoluta hacia la carpeta 'models'
+    # Esto equivale a subir un nivel (..) y entrar a 'models'
+    ruta_models = os.path.join(directorio_script, '..', 'models')
+    ruta_json = os.path.join(ruta_models, 'best_params.json')
+    
+    # Asegura que la carpeta exista en la ubicación correcta
+    os.makedirs(ruta_models, exist_ok=True)
+    
+    # Intenta guardar el archivo JSON usando la ruta absoluta fija
+    with open(ruta_json, 'w', encoding='utf-8') as f:
+        json.dump(mejor_intento.params, f, indent=4, ensure_ascii=False)
         
     print("✅ Hiperparámetros guardados exitosamente en 'models/best_params.json'")
 
