@@ -43,11 +43,21 @@ def get_train_data(client: bigquery.Client = None) -> pd.DataFrame:
         """
         df_train = client.query(query).to_dataframe()
     else:
-        print("💻 [LOCAL] Leyendo datos de entrenamiento (Train) desde CSV local...")
-        ruta = "../data/obt_house_prices__train.csv"
-        if not os.path.exists(ruta):
-            raise FileNotFoundError(f"Falta el archivo {ruta}. Descárgalo de BQ y ponlo en la carpeta data/.")
-        df_train = pd.read_csv(ruta)
+        print("💻 [LOCAL] Leyendo datos de entrenamiento desde CSV local...")
+        
+        # 1. Obtiene la ruta del script actual
+        directorio_script = os.path.dirname(os.path.abspath(__file__))
+        
+        # 2. Construye la ruta absoluta hacia la carpeta 'data' subiendo un nivel
+        ruta_data = os.path.join(directorio_script, '..', 'data')
+        ruta_csv = os.path.join(ruta_data, 'obt_house_prices__train.csv')
+        
+        # 3. Verifica si el archivo existe usando la ruta absoluta definitiva
+        if not os.path.exists(ruta_csv):
+            raise FileNotFoundError(f"Falta el archivo {ruta_csv}. Descárgalo de BQ y ponlo en la carpeta data/.")
+            
+        # 4. Lee el archivo de forma segura
+        df_train = pd.read_csv(ruta_csv)
     
     # Limpieza básica de la ingesta
     if 'property_id' in df_train.columns:
@@ -73,11 +83,21 @@ def get_test_data(client: bigquery.Client = None) -> tuple[pd.DataFrame, pd.Seri
         """
         df_test = client.query(query_test).to_dataframe()
     else:
-        print("💻 [LOCAL] Leyendo datos de test (Kaggle Test) desde CSV local...")
-        ruta = "../data/obt_house_prices__test.csv"
-        if not os.path.exists(ruta):
-            raise FileNotFoundError(f"Falta el archivo {ruta}. Descárgalo de BQ y ponlo en la carpeta data/.")
-        df_test = pd.read_csv(ruta)
+        print("💻 [LOCAL] Leyendo datos de testing desde CSV local...")
+        
+        # 1. Obtiene la ruta del script actual
+        directorio_script = os.path.dirname(os.path.abspath(__file__))
+        
+        # 2. Construye la ruta absoluta hacia la carpeta 'data' subiendo un nivel
+        ruta_data = os.path.join(directorio_script, '..', 'data')
+        ruta_csv = os.path.join(ruta_data, 'obt_house_prices__test.csv')
+        
+        # 3. Verifica si el archivo existe usando la ruta absoluta definitiva
+        if not os.path.exists(ruta_csv):
+            raise FileNotFoundError(f"Falta el archivo {ruta_csv}. Descárgalo de BQ y ponlo en la carpeta data/.")
+            
+        # 4. Lee el archivo de forma segura
+        df_test = pd.read_csv(ruta_csv)
     
     # Validación de datos y auditoría básica
     duplicados = df_test[df_test.duplicated(subset=['property_id'], keep=False)]
