@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from google.cloud import bigquery
 
@@ -5,26 +6,48 @@ from google.cloud import bigquery
 # se carguen las variables de entorno automáticamente.
 import config 
 
-def get_bq_client() -> bigquery.Client:
-    """Inicializa y retorna el cliente de BigQuery de forma segura."""
-    # GCP busca automáticamente la variable GOOGLE_APPLICATION_CREDENTIALS 
-    # que ya fue cargada en el entorno por config.py
+def get_bq_client():
+    """
+    Inicializa y retorna el cliente de BigQuery solo si estamos en modo PROD.
+    Retorna None en modo LOCAL para evitar errores de autenticación.
+    """
+    modo = os.getenv("EXECUTION_MODE", "LOCAL")
+    
+    if modo == "LOCAL":
+        return None
+        
     try:
         client = bigquery.Client()
-        print("✅ Cliente de BigQuery inicializado correctamente.")
+        print("✅ Cliente de BigQuery inicializado correctamente (Modo PROD).")
         return client
     except Exception as e:
         print(f"❌ Error al conectar con BigQuery: {e}")
         raise
 
-def get_train_data(client: bigquery.Client) -> pd.DataFrame:
-    """Descarga los datos de entrenamiento desde la capa Gold de dbt."""
-    query = """
-        SELECT *
-        FROM `primer-proyecto-kaggle.dbt_icastro_gold_marts.obt_house_prices__train`
-    """
-    print("⏳ Descargando datos de entrenamiento (Train)...")
-    df_train = client.query(query).to_dataframe()
+def get_train_data(client: bigquery.Client = None) -> pd.DataFrame:
+    """Descarga los datos de entrenamiento dependiendo del entorno."""
+    modo = os.getenv("EXECUTION_MODE", "LOCAL")
+    
+    if modo == "PROD":
+        # Leemos el ID del proyecto desde el .env
+        project_id = os.getenv("GCP_PROJECT_ID")
+        if not project_id:
+            raise ValueError("❌ Falta definir GCP_PROJECT_ID en el archivo .env")
+
+        print(f"☁️ [PROD] Descargando datos de entrenamiento (Train) desde {project_id}...")
+        
+        # Inyectamos el project_id dinámicamente en la query usando una f-string
+        query = f"""
+            SELECT *
+            FROM `{project_id}.dbt_icastro_gold_marts.obt_house_prices__train`
+        """
+        df_train = client.query(query).to_dataframe()
+    else:
+        print("💻 [LOCAL] Leyendo datos de entrenamiento (Train) desde CSV local...")
+        ruta = "../data/obt_house_prices__train.csv"
+        if not os.path.exists(ruta):
+            raise FileNotFoundError(f"Falta el archivo {ruta}. Descárgalo de BQ y ponlo en la carpeta data/.")
+        df_train = pd.read_csv(ruta)
     
     # Limpieza básica de la ingesta
     if 'property_id' in df_train.columns:
@@ -33,14 +56,28 @@ def get_train_data(client: bigquery.Client) -> pd.DataFrame:
     print(f"✅ Datos de Train listos. Filas: {df_train.shape[0]}, Columnas: {df_train.shape[1]}")
     return df_train
 
-def get_test_data(client: bigquery.Client) -> tuple[pd.DataFrame, pd.Series]:
-    """Descarga los datos de testeo y separa los IDs para la predicción final."""
-    query_test = """
-        SELECT *
-        FROM `primer-proyecto-kaggle.dbt_icastro_gold_marts.obt_house_prices__test`
-    """
-    print("🔍 Descargando datos de test (Kaggle Test)...")
-    df_test = client.query(query_test).to_dataframe()
+def get_test_data(client: bigquery.Client = None) -> tuple[pd.DataFrame, pd.Series]:
+    """Descarga los datos de testeo y separa los IDs dependiendo del entorno."""
+    modo = os.getenv("EXECUTION_MODE", "LOCAL")
+    
+    if modo == "PROD":
+        project_id = os.getenv("GCP_PROJECT_ID")
+        if not project_id:
+            raise ValueError("❌ Falta definir GCP_PROJECT_ID en el archivo .env")
+
+        print(f"☁️ [PROD] Descargando datos de test (Kaggle Test) desde {project_id}...")
+        
+        query_test = f"""
+            SELECT *
+            FROM `{project_id}.dbt_icastro_gold_marts.obt_house_prices__test`
+        """
+        df_test = client.query(query_test).to_dataframe()
+    else:
+        print("💻 [LOCAL] Leyendo datos de test (Kaggle Test) desde CSV local...")
+        ruta = "../data/obt_house_prices__test.csv"
+        if not os.path.exists(ruta):
+            raise FileNotFoundError(f"Falta el archivo {ruta}. Descárgalo de BQ y ponlo en la carpeta data/.")
+        df_test = pd.read_csv(ruta)
     
     # Validación de datos y auditoría básica
     duplicados = df_test[df_test.duplicated(subset=['property_id'], keep=False)]
