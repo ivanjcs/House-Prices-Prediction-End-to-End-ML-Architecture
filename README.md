@@ -110,18 +110,49 @@ La validacion cruzada es una herramienta diseñada para mitigar la alta varianza
 Bash
 
 
-# Crear y activar entorno virtual
-(insertar poetry)
+### 1. Requisitos Previos
+Asegúrate de tener Python instalado en tu sistema.
 
+### 2. Instalar Poetry (si no lo tienes)
+Si aún no tienes Poetry instalado en tu computadora, ejecuta el siguiente comando:
 
-# Instalar dependencias
-`pip install -r requirements.txt`
-2. Entrenamiento del Modelo
+**En Windows (PowerShell):**
+```bash
+(Invoke-WebRequest -Uri https://python-poetry.org -UseBasicParsing).Content | py -
+```
+
+**En Linux / macOS:**
+```bash
+curl -sSL https://python-poetry.org | python3 -
+```
+
+### 3. Crear e Instalar el Entorno Virtual
+Dirígete a la carpeta raíz del proyecto (donde está el archivo `pyproject.toml`) e instala todas las dependencias del proyecto:
+
+```bash
+poetry install
+```
+*Nota: Este comando creará automáticamente el entorno virtual e instalará librerías como pandas, scikit-learn, etc.*
+
+### 4. Activar el Entorno Virtual
+Para entrar al entorno virtual y ejecutar tus scripts de Python, usa:
+
+```bash
+poetry shell
+```
+
+O si prefieres ejecutar un script directamente sin activar la terminal completa:
+```bash
+poetry run python src/tu_script.py
+```
+
+## 5. Entrenamiento del Modelo
 Para replicar el preprocesamiento, ejecutar la poda por F-score, afinar hiperparámetros y generar el artefacto .joblib en la carpeta models/:
 
-
+```bash
 python src/train.py
-3. Levantar la API de Predicción
+```
+### 6. Levantar la API de Predicción
 ```Bash
 cd api
 uvicorn main:app --reload
