@@ -106,9 +106,6 @@ La validacion cruzada es una herramienta diseñada para mitigar la alta varianza
 - Impacto: Reducción inmediata del 80% en los tiempos de cómputo y costos de Cloud Computing en la fase de ajuste de Optuna, manteniendo una métrica de generalización (RMSLE) altamente confiable.
 
 # 🚀 Cómo ejecutar el proyecto
-1. Entorno Virtual y Dependencias
-Bash
-
 
 ### 1. Requisitos Previos
 Asegúrate de tener Python instalado en tu sistema.
