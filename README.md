@@ -18,7 +18,7 @@ Este proyecto implementa un motor de predicción de precios inmobiliarios altame
 
 | Métrica | Resultado |
 | :--- | :--- |
-| **Kaggle Benchmark (RMSLE)** | `[0.12620]` |
+| **Kaggle Benchmark (RMSLE)** | `[0.12620]` -> Top 24% Overall with only 1 optimize model|
 | **Margen de Error Promedio** | `[12%]` <br> *(~ `$20,263` sobre una propiedad promedio)* |
 
 ---
