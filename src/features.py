@@ -254,13 +254,16 @@ def build_preprocessor() -> Pipeline:
         remainder='passthrough' 
     )
     
+    #preprocesador_base.set_output(transform="pandas")
+    
     # 2. La secuencia estricta: Primero transformar, LUEGO podar
-    #pipeline_maestro = Pipeline(steps=[
-    #    ('logaritmo_seguro', SafeLog1pTransformer()),
-    #    ('transformacion_base', preprocesador_base),
-    #    ('seleccion_fscore', FScoreFeatureSelector(threshold=2)) # Actúa sobre el 100% de la matriz ya transformada
-    #])
+    pipeline_maestro = Pipeline(steps=[
+        ('logaritmo_seguro', SafeLog1pTransformer()),
+        ('transformacion_base', preprocesador_base),
+        #('seleccion_fscore', FScoreFeatureSelector(threshold=2)) # Actúa sobre el 100% de la matriz ya transformada
+    ])
     
-    preprocesador_base.set_output(transform="pandas")
+    pipeline_maestro.set_output(transform="pandas")
     
-    return preprocesador_base
+    
+    return pipeline_maestro

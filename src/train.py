@@ -105,8 +105,10 @@ def run_training_and_production():
     print("✅ Entrenamiento ciego completado.")
     
     # 1. EXPORTACIÓN DEL ARTEFACTO (.joblib)
-    os.makedirs('../models', exist_ok=True)
-    ruta_modelo = '../models/pipeline_produccion_v1.joblib'
+    
+    ruta_models = os.path.join(directorio_script, '..', 'models')
+    os.makedirs(ruta_models, exist_ok=True)
+    ruta_modelo = os.path.join(ruta_models,'pipeline_produccion_v1.joblib')
     joblib.dump(pipeline_produccion, ruta_modelo)
     print(f"💾 Tubería de producción exportada exitosamente a: {ruta_modelo}")
     
