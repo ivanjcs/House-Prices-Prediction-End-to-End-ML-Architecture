@@ -106,22 +106,50 @@ La validacion cruzada es una herramienta diseñada para mitigar la alta varianza
 - Impacto: Reducción inmediata del 80% en los tiempos de cómputo y costos de Cloud Computing en la fase de ajuste de Optuna, manteniendo una métrica de generalización (RMSLE) altamente confiable.
 
 # 🚀 Cómo ejecutar el proyecto
-1. Entorno Virtual y Dependencias
-Bash
 
+### 1. Requisitos Previos
+Asegúrate de tener Python instalado en tu sistema.
 
-# Crear y activar entorno virtual
-(insertar poetry)
+### 2. Instalar Poetry (si no lo tienes)
+Si aún no tienes Poetry instalado en tu computadora, ejecuta el siguiente comando:
 
+**En Windows (PowerShell):**
+```bash
+(Invoke-WebRequest -Uri https://python-poetry.org -UseBasicParsing).Content | py -
+```
 
-# Instalar dependencias
-`pip install -r requirements.txt`
-2. Entrenamiento del Modelo
+**En Linux / macOS:**
+```bash
+curl -sSL https://python-poetry.org | python3 -
+```
+
+### 3. Crear e Instalar el Entorno Virtual
+Dirígete a la carpeta raíz del proyecto (donde está el archivo `pyproject.toml`) e instala todas las dependencias del proyecto:
+
+```bash
+poetry install
+```
+*Nota: Este comando creará automáticamente el entorno virtual e instalará librerías como pandas, scikit-learn, etc.*
+
+### 4. Activar el Entorno Virtual
+Para entrar al entorno virtual y ejecutar tus scripts de Python, usa:
+
+```bash
+poetry shell
+```
+
+O si prefieres ejecutar un script directamente sin activar la terminal completa:
+```bash
+poetry run python src/tu_script.py
+```
+
+## 5. Entrenamiento del Modelo
 Para replicar el preprocesamiento, ejecutar la poda por F-score, afinar hiperparámetros y generar el artefacto .joblib en la carpeta models/:
 
-
+```bash
 python src/train.py
-3. Levantar la API de Predicción
+```
+### 6. Levantar la API de Predicción
 ```Bash
 cd api
 uvicorn main:app --reload
