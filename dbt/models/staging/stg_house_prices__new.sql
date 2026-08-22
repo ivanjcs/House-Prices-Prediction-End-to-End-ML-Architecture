@@ -22,13 +22,12 @@
 ] %}
 
 WITH source AS (
-    SELECT * 
-    FROM {{ source('new_properties', 'new_properties') }}
+    SELECT * FROM {{ source('new_properties', 'new_properties') }}
 ),
 
-null_profile AS (
+historical_modes AS (
     SELECT *
-    FROM {{ ref('stg_int_house_prices_null_profile') }}
+    FROM {{ ref('stg_int_house_prices_modes') }}
 ),
 
 renamed AS (
@@ -106,7 +105,7 @@ renamed AS (
 
     -- 🚀 APLICACIÓN DE LOS ALIAS Y EL JOIN
     FROM source AS s
-    CROSS JOIN null_profile AS m
+    CROSS JOIN historical_modes AS m
 )
 
 SELECT * FROM renamed
