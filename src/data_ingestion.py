@@ -112,6 +112,43 @@ def get_test_data(client: bigquery.Client = None) -> tuple[pd.DataFrame, pd.Seri
     print(f"✅ Datos de Test listos. Filas: {X_test.shape[0]}")
     return X_test, ids_submission
 
+def get_to_predict_data(client: bigquery.Client = None) -> tuple[pd.DataFrame, pd.Series]:
+    """Descarga las propiedades nuevas que necesitan ser tasadas."""
+    modo = os.getenv("EXECUTION_MODE", "LOCAL")
+    
+    if modo == "PROD":
+        project_id = os.getenv("GCP_PROJECT_ID")
+        print(f"☁️ [PROD] Descargando propiedades nuevas desde la capa Gold de BQ...")
+        query = f"""
+            SELECT *
+            FROM `{project_id}.dbt_icastro_gold_marts.obt_house_prices__to_predict`
+        """
+        df_new = client.query(query).to_dataframe()
+    else:
+        print("💻 [LOCAL] Leyendo propiedades de muestra desde CSV local...")
+        
+        # 1. Obtiene la ubicación del script actual
+        directorio_script = os.path.dirname(os.path.abspath(__file__))
+        
+        # 2. Construye la ruta absoluta subiendo un nivel (..) y entrando a 'data'
+        ruta_data = os.path.join(directorio_script, '..', 'data')
+        ruta_csv = os.path.join(ruta_data, 'sample_gold_houses.csv')
+        
+        # 3. Asegura que la carpeta exista por si acaso
+        os.makedirs(ruta_data, exist_ok=True)
+        
+        # 4. Lee el archivo usando la ruta absoluta fija
+        df_new = pd.read_csv(ruta_csv)
+    
+    # Separamos el ID para poder devolverlo junto con la predicción final
+    if 'property_id' not in df_new.columns:
+        raise ValueError("La columna 'property_id' no se encontró en los datos.")
+        
+    ids = df_new['property_id']
+    X_new = df_new.drop(columns=['property_id', 'Id'], errors='ignore')
+    
+    return X_new, ids
+
 # Este bloque permite probar el script individualmente 
 if __name__ == "__main__":
     bq_client = get_bq_client()
