@@ -6,3 +6,6 @@ sources:
     tables:
       - name: house_prices_train
       - name: house_prices_test
+  - name: new_properties
+    tables:
+      - name: new_properties
