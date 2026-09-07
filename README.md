@@ -1,5 +1,6 @@
 <div align="center">
-  <h1 id="english">🚀 🏠 Ames Real Estate Pricing Engine | End-to-End ML Architecture Optimization </h1>
+  <h1 id="english">🚀 End-to-End ML Architecture Optimization </h1>
+  <p><b>🏠 Ames Real Estate Pricing Engine</b></p>
 
    ![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)
    ![XGBoost](https://img.shields.io/badge/XGBoost-%23178C3A.svg?logo=xgboost&logoColor=white)
